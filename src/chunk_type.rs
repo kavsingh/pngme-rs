@@ -22,13 +22,10 @@ impl FromStr for ChunkType {
 	type Err = crate::Error;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		let bytes = s.as_bytes();
-
-		if bytes.len() != 4 {
-			return Err(Self::Err::from("input must have length 4"));
+		match s.as_bytes() {
+			[a, b, c, d] => Self::try_from([*a, *b, *c, *d]),
+			_ => Err(Self::Err::from("input must have length 4")),
 		}
-
-		Self::try_from([bytes[0], bytes[1], bytes[2], bytes[3]])
 	}
 }
 
