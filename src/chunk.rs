@@ -9,10 +9,10 @@ pub struct Chunk {
 	crc: u32,
 }
 
-impl TryFrom<&Vec<u8>> for Chunk {
+impl TryFrom<&[u8]> for Chunk {
 	type Error = crate::Error;
 
-	fn try_from(input: &Vec<u8>) -> Result<Self, Self::Error> {
+	fn try_from(input: &[u8]) -> Result<Self, Self::Error> {
 		let len = match input[0..4] {
 			[a, b, c, d] => u32::from_be_bytes([a, b, c, d]),
 			_ => return Err(Self::Error::from("invalid length part")),
@@ -30,17 +30,13 @@ impl TryFrom<&Vec<u8>> for Chunk {
 		}
 
 		let chunk = Chunk::new(chunk_type, data);
-		let crc = match input[(8 + len as usize)..] {
+		let crc = match input[(8 + len as usize)..(12 + len as usize)] {
 			[a, b, c, d] => u32::from_be_bytes([a, b, c, d]),
 			_ => return Err(Self::Error::from("invalid crc part")),
 		};
 
 		if crc != chunk.crc() {
 			return Err(Self::Error::from("crc mismatch"));
-		}
-
-		if chunk.as_bytes() != *input {
-			return Err(Self::Error::from("encode mismatch"));
 		}
 
 		Ok(chunk)
@@ -61,18 +57,15 @@ impl Chunk {
 
 	pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
 		let length = data.len() as u32;
-		let bytes: Vec<u8> = chunk_type
-			.bytes()
-			.iter()
-			.chain(data.iter())
-			.copied()
-			.collect();
+		let mut crc_bytes = chunk_type.bytes().to_vec();
+
+		crc_bytes.append(&mut data.to_owned());
 
 		Self {
 			chunk_type,
 			data,
 			length,
-			crc: Self::CRC.checksum(&bytes),
+			crc: Self::CRC.checksum(&crc_bytes),
 		}
 	}
 
