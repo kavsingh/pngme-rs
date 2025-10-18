@@ -10,7 +10,7 @@ impl TryFrom<[u8; 4]> for ChunkType {
 	type Error = crate::Error;
 
 	fn try_from(bytes: [u8; 4]) -> Result<Self, Self::Error> {
-		if bytes.iter().any(|b| !u8::is_ascii_alphabetic(b)) {
+		if bytes.iter().any(|b| !b.is_ascii_alphabetic()) {
 			return Err(Self::Error::from("invalid input"));
 		}
 
@@ -50,23 +50,23 @@ impl ChunkType {
 	}
 
 	pub fn is_critical(&self) -> bool {
-		u8::is_ascii_uppercase(&self.bytes[0])
+		self.bytes[0].is_ascii_uppercase()
 	}
 
 	pub fn is_public(&self) -> bool {
-		u8::is_ascii_uppercase(&self.bytes[1])
+		self.bytes[1].is_ascii_uppercase()
 	}
 
 	pub fn is_reserved_bit_valid(&self) -> bool {
-		u8::is_ascii_uppercase(&self.bytes[2])
+		self.bytes[2].is_ascii_uppercase()
 	}
 
 	pub fn is_safe_to_copy(&self) -> bool {
-		u8::is_ascii_lowercase(&self.bytes[3])
+		self.bytes[3].is_ascii_lowercase()
 	}
 
 	pub fn is_valid(&self) -> bool {
-		if self.bytes.iter().any(|b| !u8::is_ascii_alphabetic(b)) {
+		if self.bytes.iter().any(|b| !b.is_ascii_alphabetic()) {
 			return false;
 		}
 
