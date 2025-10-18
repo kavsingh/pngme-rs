@@ -33,7 +33,7 @@ impl Display for Png {
 		let chunks = self
 			.chunks
 			.iter()
-			.map(|c| format!("[{}]", c.chunk_type()))
+			.map(|c| format!("[{} {}]", c.chunk_type(), c.length()))
 			.collect::<Vec<String>>()
 			.join(" ");
 
@@ -85,8 +85,8 @@ impl Png {
 	}
 
 	pub fn as_bytes(&self) -> Vec<u8> {
-		let mut bytes = Self::STANDARD_HEADER.to_vec();
-		bytes.extend(self.chunks.iter().flat_map(|c| c.as_bytes()));
+		let mut bytes = self.header().to_vec();
+		bytes.extend(self.chunks().iter().flat_map(|c| c.as_bytes()));
 
 		bytes
 	}
@@ -95,7 +95,6 @@ impl Png {
 #[cfg(test)]
 mod tests {
 	use std::convert::TryFrom;
-	use std::str::FromStr;
 
 	use super::*;
 	use crate::Result;
