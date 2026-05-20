@@ -14,11 +14,10 @@ pub fn encode(
 	output_file: &Option<PathBuf>,
 ) -> Result<()> {
 	let out_path = output_file.to_owned().unwrap_or_else(|| {
-		let mut out = input_file.clone();
-
-		out.set_file_name("output.png");
-
-		out
+		match input_file.file_prefix().and_then(|p| p.to_str()) {
+			Some(p) => input_file.with_file_name(format!("{p}-encoded.png")),
+			None => input_file.with_file_name("encoded.png"),
+		}
 	});
 
 	let data = fs::read(input_file)?;
